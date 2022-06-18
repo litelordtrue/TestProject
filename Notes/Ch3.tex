@@ -1,0 +1,22 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\title{Chapter 3 Notes}
+\date{June 15, 2022}
+
+\begin{document}
+    \textnormal{Haskell uses types and classes.} \newline
+    \textnormal{A \textit{type} is a collection of related values. 
+    For example, Bool is a type which can hold False and True. The correct notation for this is}
+    \begin{math}
+        v :: T
+    \end{math}
+    \textnormal{to mean that v is a value in the type T. 
+    Every expression must have a type, which is calculated at runtime by \textit{type inference.}
+    The type of a function is determined by its inputs and outputs. For example, we would say}\newline
+    \begin{math}
+        (+) :: Num \space a => a -> a -> a
+    \end{math}\newline
+    \textnormal{
+        because plus takes two Num inputs a and outputs a num a as well. 
+    }
+\end{document}
