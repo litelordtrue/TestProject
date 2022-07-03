@@ -24,7 +24,3 @@ dotproduct xs ys = sum [x*y | (x,y) <- zip xs ys]
 -- extremely elegant foldl solution.
 dec2int :: [Int] -> Int
 dec2int =  foldl (\x y -> 10*x + y) 0
-
--- Ch7,#5. Try to write a curry and invcurry function
-
--- currymy :: ((a,b) -> c) -> (a -> b -> c)

@@ -26,12 +26,16 @@ source-repository head
 library
   exposed-modules:
       Ch1
+      Ch10
       Ch2
       Ch4
       Ch5
       Ch6
       Ch7
+      Ch8
       Lib
+      RomanNaturals
+      SuperAutoFunc
   other-modules:
       Paths_TestProject
   hs-source-dirs:
