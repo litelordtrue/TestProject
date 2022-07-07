@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use concatMap" #-}
+{-# HLINT ignore "Redundant bracket" #-}
 module RomanNaturals where
 
 import Data.List ( elemIndex, sort, sortBy, groupBy, nubBy)
@@ -36,10 +37,13 @@ instance Show Numeral where
     showList (n:ns) = shows n . showList ns
 
 instance Read Numeral where
-    readsPrec p c = [(n,cu) | (n, cu) <- showdict, cu == c]
+    readsPrec _ c = [(n,cu) | (n, cu) <- showdict, cu == c]
 
 readnum :: String -> Numeral
 readnum c = head [n | (n, cu) <- showdict, cu == c]
+
+readnum1 :: String -> [(Numeral, String)]
+readnum1 c = [(n,cu) | (n, cu) <- showdict, cu == c]
 
 readnumstr :: String -> NumeralStr
 readnumstr "" = []
@@ -112,21 +116,28 @@ validnum (x:xs) = checktrio (x,y,z) && validnum xs where
     [y, z] = take 2 xs
 
 cleanstr :: NumeralStr -> NumeralStr
-cleanstr = id
+cleanstr x = if not (branchfilter x) then converti (convertn x) else x
+
+branchfilter :: NumeralStr -> Bool
+branchfilter x = (x == converti (convertn x))
+
 ----------------------------
 
 -- defining binary operations on NumeralStr. This is where the fun begins -------------------
 
+-- in general, fconvertslow provides the isomorphism between functions on two natural numbers and functions on two numeral strings.
+-- It's tagged as slow because it requires three isomorphic conversions as well as the function operation. 
+fconvertslow :: (Int -> Int -> Int) -> (NumeralStr -> NumeralStr -> NumeralStr)
+fconvertslow f x y = converti ((convertn x) `f` (convertn y))
+
 -- adding and multiplying by converting to integers and converting back. can be really tedious
 addslow :: NumeralStr -> NumeralStr -> NumeralStr
-addslow x y = converti (convertn x + convertn y)
-
--- in order to add two roman numerals together, the new oxford values are placed in the appropriate location, then the string is cleaned up
---add :: NumeralStr -> NumeralStr -> NumeralStr
-
+addslow = fconvertslow (+)
 
 multslow :: NumeralStr -> NumeralStr -> NumeralStr
-multslow x y = converti (convertn x * convertn y)
+multslow = fconvertslow (*)
+-- in order to add two roman numerals together, the new oxford values are placed in the appropriate location, then the string is cleaned up
+--add :: NumeralStr -> NumeralStr -> NumeralStr
 ------
 
 -- Lets try to build some IO stuff
@@ -138,3 +149,19 @@ ioconverti = do
     input <- getLine
     putStr "Here it is! "
     return (converti (read input))
+
+guessgame :: IO Bool
+
+guessgame = do
+    let targeti = 55
+    let targetn = converti targeti
+    print numeraldict
+    putStr "Try to guess what my number is! as a roman numeral if you will: "
+    input <- getLine
+    let answern = readnumstr input
+    let answer = (answern == targetn)
+    if answer 
+        then return answer 
+    else do
+        putStrLn "Not quite!"
+        guessgame
