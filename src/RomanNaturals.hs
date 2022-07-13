@@ -5,11 +5,12 @@ module RomanNaturals where
 
 import Data.List ( elemIndex, sort, sortBy, groupBy, nubBy)
 import Text.Read ()
+import Data.Maybe
 
 -- defining basic structures -----------
 
 -- defining a new datatype Numeral which can take one of the seven characters assigned, and derives some basic useful datatypes
-data Numeral = I | V | X | L | C | D | M deriving (Eq)
+data Numeral = I | V | X | L | C | D | M deriving (Eq, Read)
 -- defining a NumeralStr which is a list of Numeral, much like String is a list of Char
 type NumeralStr = [Numeral]
 -----------------------------------------
@@ -30,20 +31,15 @@ instance Ord Numeral where
 -- creating a way to display numerals
 instance Show Numeral where
     -- showing an individual numeral is done by taking the first character in showdict that matches the numeral
-    show n = head [c | (nu,c) <- showdict, nu == n]
+    show n = head ([c | (nu,c) <- showdict, nu == n] ++ [""])
 
     -- in order to display a list of numerals, much like how String is of type [Char], we display an empty string for an empty list and otherwise just display the numerals in order concated.
     showList [] = (++ "")
     showList (n:ns) = shows n . showList ns
 
-instance Read Numeral where
-    readsPrec _ c = [(n,cu) | (n, cu) <- showdict, cu == c]
-
+-- these are perfectly good readers, but Instance Read has its own wacky rules.
 readnum :: String -> Numeral
-readnum c = head [n | (n, cu) <- showdict, cu == c]
-
-readnum1 :: String -> [(Numeral, String)]
-readnum1 c = [(n,cu) | (n, cu) <- showdict, cu == c]
+readnum c = head ([n | (n, cu) <- showdict, cu == c])
 
 readnumstr :: String -> NumeralStr
 readnumstr "" = []
@@ -59,7 +55,7 @@ numeraldict = zip numerals measures
 
 -- list of possible Numeral pairs [i, j] where i < j. ex) IV is 4, IX is 9, VC is 95, etc etc. These are useful because we want to use these when constructing numerals from integers. We could construct 95 as LVL, but thats gross.
 subpairs :: [NumeralStr]
-subpairs = filter validnum [[i, j] | i <- numerals, j <- numerals, i < j]
+subpairs = filter validnum [[i, j] | i <- [I,X,C,M], j <- numerals, i < j]
 
 subpairdict :: [(NumeralStr, Int)]
 subpairdict = filter ((`notElem` measures) . snd) (sortBy sortpairs (zip subpairs (map convertn subpairs)))
@@ -121,6 +117,14 @@ cleanstr x = if not (branchfilter x) then converti (convertn x) else x
 branchfilter :: NumeralStr -> Bool
 branchfilter x = (x == converti (convertn x))
 
+firsthundred :: [NumeralStr]
+firsthundred = map readnumstr ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX","XXI","XXII","XXIII","XXIV","XXV","XXVI","XXVII","XXVIII","XXIX","XXX","XXXI","XXXII","XXXIII","XXXIV","XXXV","XXXVI","XXXVII","XXXVIII","XXXIX","XL","XLI","XLII","XLIII","XLIV","XLV","XLVI","XLVII","XLVIII","XLIX","L","LI","LII","LIII","LIV","LV","LVI","LVII","LVIII","LIX","LX","LXI","LXII","LXIII","LXIV","LXV","LXVI","LXVII","LXVIII","LXIX","LXX","LXXI","LXXII","LXXIII","LXXIV","LXXV","LXXVI","LXXVII","LXXVIII","LXXIX","LXXX","LXXXI","LXXXII","LXXXIII","LXXXIV","LXXXV","LXXXVI","LXXXVII","LXXXVIII","LXXXIX","XC","XCI","XCII","XCIII","XCIV","XCV","XCVI","XCVII","XCVIII","XCIX","C"]
+
+addint :: (NumeralStr, NumeralStr) -> (NumeralStr, NumeralStr, Int)
+addint (x,y) = (x,y, convertn x)
+
+invalid :: [(NumeralStr,NumeralStr, Int)]
+invalid = map addint (filter (uncurry (/=)) (zip (map converti [1..100]) (firsthundred)))
 ----------------------------
 
 -- defining binary operations on NumeralStr. This is where the fun begins -------------------
